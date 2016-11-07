@@ -1,0 +1,172 @@
+---
+title: "Homework 4"
+author: "Matt Corsetti"
+date: "November 7, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+I first began tracking my weight on June 26th, 2016 to see how it might fluctuate as I began the first semester of my Ph.D. program at the University of Rochester in Rochester, NY. On June 26th I weigth 176 lbs. As of November 7th, I weighed 159.5 lbs.
+
+
+
+### Data Collection
+
+I collected the data by simply weighing myself as soon as I woke up. Measurements were unfortunately not taken every day. Also, the time of the measurement was not consistent. Some measurements were taken as early as 6:00AM while others were taken as late as 11:15AM. No food or liquids were consumed before weighing myself.
+
+Each measurement was entered into the MyFitnessPal app which is provided for free by Under Armour. More information is provided here: <http://www.myfitnesspal.com/apps>.
+
+
+
+## Data Analysis in R
+
+### Reading in the Data
+```{r}
+
+### Libraries
+
+   library(readxl)	# Hadley Wickham's package for reading in excel files
+   library(ggplot2)	# ggplot2 - nice plots
+   library(xtable)  # makes for nice tables
+
+
+### Directories
+
+   dir.data <- 'C:/Users/Matt/Desktop/My Documents/U of R/BST 494 - Statistical Computing/Data/'
+
+
+### Read in Weight Data
+
+   w <- read_excel(c(paste0(dir.data, 'Matt Corsetti - Weight Data.xlsx')))
+   str(w)
+   
+```
+   
+   
+### Summary Statistics
+```{r}
+
+   summary(w$Weight)
+
+```
+
+```{r, echo = FALSE}
+
+   ggplot(w, aes(x = Weight)) +
+     geom_histogram(fill = 'dark blue', col = 'light grey', binwidth = 1) +
+     xlab('\nWeight\n') +
+     ylab('Count\n') +
+     ggtitle("\nDistribution of Matt's Weight Measurements\n") +
+     theme(panel.background = element_rect(fill = 'dark grey'),
+           panel.grid.major = element_line(color = 'grey'),
+           panel.grid.minor = element_blank(),
+           plot.background = element_rect(fill = 'black'),
+           plot.title = element_text(color = 'light grey', size = 15),
+           axis.title.y = element_text(color = 'light grey', angle = 0),
+           axis.title.x = element_text(color = 'light grey'),
+           legend.background = element_rect(fill = 'black'),
+           legend.text = element_text(color = 'light grey'),
+           legend.title = element_text(color = 'light grey'),
+           axis.text.x = element_text(color = 'light grey'),
+           axis.text.y = element_text(color = 'light grey'))
+
+```
+
+### Weight Measurement Data
+
+```{r, echo = FALSE}
+
+  ggplot(w, aes(x = Date, y = Weight)) +
+    geom_line(col = 'red') +
+    geom_point() +
+    xlab('\nDate of Measurement\n') +
+    ylab('Weight\n') +
+    ggtitle("\nMatt's Weight From Summer to Winter\n(Linear Regression)\n") +
+    theme(panel.background = element_rect(fill = 'dark grey'),
+      panel.grid.major = element_line(color = 'grey'),
+		  panel.grid.minor = element_blank(),
+		  plot.background = element_rect(fill = 'black'),
+		  plot.title = element_text(color = 'light grey', size = 15),
+		  axis.title.y = element_text(color = 'light grey', angle = 0),
+		  axis.title.x = element_text(color = 'light grey'),
+		  legend.background = element_rect(fill = 'black'),
+		  legend.text = element_text(color = 'light grey'),
+		  legend.title = element_text(color = 'light grey'),
+		  axis.text.x = element_text(color = 'light grey'),
+		  axis.text.y = element_text(color = 'light grey'))
+		  
+```
+
+
+
+
+### Linear Regression Model
+
+Having plotted the data, a linear regression model appears to be a decent model candidate. The steps below show the creation and summary of a linear regression model for the weight data. A plot which overlays the regression model atop the observed data points is also provided.
+
+```{r, results = 'asis'}
+
+  lm.w <- lm(Weight ~ Date, data = w)
+  cat('Adjusted R-sq:', summary(lm.w)$adj.r.squared)
+  print(xtable(summary(lm.w)), type = 'html')
+   
+```
+
+```{r, echo = FALSE}
+
+  ggplot(w, aes(x = Date, y = Weight)) +
+    geom_smooth(method = 'lm', formula = y ~ x, data = w, se = FALSE) +
+    geom_line(col = 'red') +
+    geom_point() +
+    xlab('\nDate of Measurement\n') +
+    ylab('Weight\n') +
+    ggtitle("\nMatt's Weight From Summer to Winter\n(Linear Regression)\n") +
+    theme(panel.background = element_rect(fill = 'dark grey'),
+      panel.grid.major = element_line(color = 'grey'),
+		  panel.grid.minor = element_blank(),
+		  plot.background = element_rect(fill = 'black'),
+		  plot.title = element_text(color = 'light grey', size = 15),
+		  axis.title.y = element_text(color = 'light grey', angle = 0),
+		  axis.title.x = element_text(color = 'light grey'),
+		  legend.background = element_rect(fill = 'black'),
+		  legend.text = element_text(color = 'light grey'),
+		  legend.title = element_text(color = 'light grey'),
+		  axis.text.x = element_text(color = 'light grey'),
+		  axis.text.y = element_text(color = 'light grey'))
+
+```
+
+
+### Loess Curve
+
+Here we provide the Loess Curve to the weight data and plot it atop the observed data points.
+
+```{r, echo = FALSE}
+
+  ggplot(w, aes(x = Date, y = Weight)) +
+	  geom_smooth(method = 'loess', formula = y ~ x, data = w, se = FALSE) +	
+    geom_line(col = 'red') +
+    geom_point() +
+	  xlab('\nDate of Measurement\n') +
+	  ylab('Weight\n') +
+	  ggtitle("\nMatt's Weight From Summer to Winter\n(Loess Curve)\n") +
+	  theme(panel.background = element_rect(fill = 'dark grey'),
+		  panel.grid.major = element_line(color = 'grey'),
+		  panel.grid.minor = element_blank(),
+		  plot.background = element_rect(fill = 'black'),
+		  plot.title = element_text(color = 'light grey', size = 15),
+		  axis.title.y = element_text(color = 'light grey', angle = 0),
+		  axis.title.x = element_text(color = 'light grey'),
+		  legend.background = element_rect(fill = 'black'),
+		  legend.text = element_text(color = 'light grey'),
+		  legend.title = element_text(color = 'light grey'),
+		  axis.text.x = element_text(color = 'light grey'),
+		  axis.text.y = element_text(color = 'light grey'))
+
+```
+
